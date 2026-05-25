@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% block title %}Pokój {{ pokoj.kod }} — Royal Poker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pokoj-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+    /* --- LOBBY --- */
+    .gracze-lista { list-style: none; }
+    .gracz-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 12px 0; border-bottom: 1px solid #0d0d0d;
+    }
+    .gracz-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: #0f0d08; border: 1px solid #2a220e;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif; font-size: 12px; color: #c9a84c;
+        flex-shrink: 0;
+    }
+
+    /* --- STÓŁ --- */
+    #stol { display: none; }
+    .stol-wrap {
+        background: #060a06; border: 1px solid #0d1a0d;
+        border-radius: 12px; padding: 32px; margin-bottom: 24px;
+    }
+    .faza-badge {
+        display: inline-block; font-size: 9px; letter-spacing: 4px;
+        color: #d4af6a; border: 1px solid #2a220e;
+        padding: 4px 14px; border-radius: 2px; margin-bottom: 20px;
+    }
+    .pula {
+        text-align: center; margin-bottom: 28px;
+    }
+    .pula-label { font-size: 9px; letter-spacing: 3px; color: #3a3020; }
+    .pula-wartosc { font-family: 'Playfair Display', serif; font-size: 28px; color: #d4af6a; }
+
+    /* karty */
+    .karty-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .karta {
+        width: 54px; height: 80px; border-radius: 6px;
+        background: #fff; border: 1px solid #ccc;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 700; box-shadow: 0 2px 8px #0006;
+        flex-shrink: 0;
+    }
+    .karta.czerwona { color: #c0392b; }
+    .karta.czarna { color: #111; }
+    .karta.zakryta { background: #1a2a1a; border-color: #2a3a2a; color: #2a3a2a; font-size: 28px; }
+    .karty-label { font-size: 9px; letter-spacing: 3px; color: #3a3020; text-align: center; margin-bottom: 8px; }
+
+    /* gracze przy stole */
+    .gracze-stol { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+    .gracz-stol {
+        background: #0a0a08; border: 1px solid #1a1408;
+        border-radius: 6px; padding: 10px 16px; min-width: 120px;
+    }
+    .gracz-stol.aktywny { border-color: #d4af6a; }
+    .gracz-stol.spasowany { opacity: 0.4; }
+    .gracz-stol-nick { font-size: 11px; color: #ccc; margin-bottom: 4px; }
+    .gracz-stol-stawka { font-size: 10px; color: #6a5525; }
+
+    /* akcje */
+    .akcje { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .akcje button { padding: 12px 22px; font-size: 10px; letter-spacing: 2px; }
+    .btn-fold { background: transparent; border-color: #3a1a1a; color: #8a4a4a; }
+    .btn-fold:hover { border-color: #c0392b; color: #c0392b; }
+    .btn-raise-input {
+        background: #0a0a08; border: 1px solid #2a220e; color: #d4af6a;
+        padding: 10px 14px; font-size: 13px; width: 90px; border-radius: 2px;
+    }
+    .nie-twoja-tura { font-size: 11px; color: #3a3020; letter-spacing: 2px; padding: 12px 0; }
+
+    /* wynik */
+    .wynik-box {
+        background: #0a0f0a; border: 1px solid #1a2a1a;
+        border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 20px;
+    }
+    .wynik-box h3 { font-family: 'Playfair Display', serif; font-size: 22px; color: #d4af6a; margin-bottom: 8px; }
+
+    /* czat */
+    .czat-box {
+        background: #0a0a08; border: 1px solid #1a1408;
+        border-radius: 4px; display: flex; flex-direction: column; height: 420px;
+    }
+    .czat-naglowek { padding: 14px 18px; border-bottom: 1px solid #111; font-size: 9px; letter-spacing: 4px; color: #3a3020; font-weight: 600; }
+    .czat-wiadomosci { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .czat-wiadomosc { font-size: 12px; line-height: 1.5; }
+    .czat-wiadomosc .nick { color: #d4af6a; font-weight: 600; margin-right: 6px; }
+    .czat-wiadomosc .tresc { color: #5a4a28; }
+    .czat-wiadomosc.systemowa .tresc { color: #2a2a20; font-style: italic; }
+    .czat-input-row { padding: 10px 14px; border-top: 1px solid #111; display: flex; gap: 8px; }
+    .czat-input-row input { flex: 1; margin-bottom: 0; padding: 10px 14px; font-size: 12px; }
+    .czat-input-row button { padding: 10px 18px; font-size: 10px; letter-spacing: 2px; }
+
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #1a3a1a; display: inline-block; margin-right: 8px; transition: background 0.3s; }
+    .status-dot.polaczony { background: #2d6a2d; }
+    @media (max-width: 700px) { .pokoj-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:960px;margin:0 auto;">
+
+    <div class="card" style="padding:0;margin-bottom:24px;">
+        <div style="padding:20px 32px;border-bottom:1px solid #111;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <h2 style="font-size:18px;margin-bottom:2px;">Pokój <span style="font-family:'Playfair Display',serif;color:#d4af6a;letter-spacing:4px;">{{ pokoj.kod }}</span></h2>
+            </div>
+            <div style="font-size:12px;color:#5a4a28;">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-tekst">Łączenie...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="pokoj-grid">
+        <div>
+
+            <!-- LOBBY -->
+            <div id="lobby">
+                <div class="card" style="padding:28px 32px;">
+                    <div style="font-size:9px;letter-spacing:4px;color:#3a3020;margin-bottom:20px;font-weight:600;">GRACZE W POKOJU</div>
+                    <ul class="gracze-lista" id="gracze-lista">
+                        {% for gracz in pokoj.gracze.all %}
+                        <li class="gracz-row" data-username="{{ gracz.username }}">
+                            <div class="gracz-avatar">{{ gracz.username|slice:":2"|upper }}</div>
+                            <div style="flex:1;font-size:13px;color:#ccc;">
+                                {{ gracz.username }}
+                                {% if gracz == pokoj.host %}<span style="font-size:9px;letter-spacing:2px;color:#6a5525;margin-left:8px;">HOST</span>{% endif %}
+                                {% if gracz == request.user %}<span style="font-size:9px;letter-spacing:2px;color:#d4af6a;margin-left:8px;">TY</span>{% endif %}
+                            </div>
+                            <div style="font-family:'Playfair Display',serif;font-size:13px;color:#d4af6a;">{{ gracz.points }} pkt</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:11px;color:#3a3020;letter-spacing:2px;">Min. punkty: <span style="color:#d4af6a;">{{ pokoj.min_punkty }}</span></div>
+                    {% if pokoj.host == request.user %}
+                    <button class="btn" id="btn-start" onclick="rozpocznijGre()" style="opacity:0.4;cursor:not-allowed;">ROZPOCZNIJ GRĘ</button>
+                    {% else %}
+                    <div style="font-size:11px;color:#3a3020;letter-spacing:2px;">Czekaj na hosta...</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- STÓŁ -->
+            <div id="stol">
+
+                <div class="stol-wrap">
+                    <div id="faza-badge" class="faza-badge">PRE-FLOP</div>
+
+                    <div class="pula">
+                        <div class="pula-label">PULA</div>
+                        <div class="pula-wartosc" id="pula-wartosc">0</div>
+                    </div>
+
+                    <div class="karty-label">KARTY WSPÓLNE</div>
+                    <div class="karty-row" id="karty-wspolne"></div>
+
+                    <div class="karty-label" style="margin-top:20px;">TWOJE KARTY</div>
+                    <div class="karty-row" id="moje-karty"></div>
+                </div>
+
+                <div class="gracze-stol" id="gracze-stol"></div>
+
+                <div id="wynik-box" class="wynik-box" style="display:none;"></div>
+
+                <div id="akcje-box">
+                    <div class="nie-twoja-tura" id="nie-twoja-tura">Czekaj na swoją turę...</div>
+                    <div class="akcje" id="akcje" style="display:none;">
+                        <button class="btn btn-fold" onclick="wyślijAkcje('fold')">FOLD</button>
+                        <button class="btn" id="btn-check" onclick="wyślijAkcje('check')">CHECK</button>
+                        <button class="btn" id="btn-call" onclick="wyślijAkcje('call')">CALL</button>
+                        <input type="number" class="btn-raise-input" id="raise-input" placeholder="Kwota">
+                        <button class="btn" onclick="wyślijRaise()">RAISE</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CZAT -->
+        <div class="czat-box">
+            <div class="czat-naglowek">CZAT POKOJU</div>
+            <div class="czat-wiadomosci" id="czat-wiadomosci"></div>
+            <div class="czat-input-row">
+                <input type="text" id="czat-input" placeholder="Wiadomość..." maxlength="200" onkeydown="if(event.key==='Enter') wyslijCzat()">
+                <button class="btn" onclick="wyslijCzat()">WYŚLIJ</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const KOD = '{{ pokoj.kod }}';
+const AKTUALNY_USER = '{{ request.user.username }}';
+let ws = null;
+
+// ------------------------------------------------------------------ //
+// WebSocket                                                            //
+// ------------------------------------------------------------------ //
+
+function polacz() {
+    const url = `ws://${window.location.host}/ws/pokoj/${KOD}/`;
+    ws = new WebSocket(url);
+
+    ws.onopen = () => {
+        document.getElementById('status-dot').classList.add('polaczony');
+        document.getElementById('status-tekst').textContent = 'Połączono';
+    };
+    ws.onclose = () => {
+        document.getElementById('status-dot').classList.remove('polaczony');
+        document.getElementById('status-tekst').textContent = 'Rozłączono';
+        setTimeout(polacz, 3000);
+    };
+    ws.onerror = () => {
+        document.getElementById('status-tekst').textContent = 'Błąd połączenia';
+    };
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        obsluzWiadomosc(data);
+    };
+}
+
+function obsluzWiadomosc(data) {
+    if (data.typ === 'gracz_dolaczyl') {
+        dodajSystemowa(`${data.username} dołączył do pokoju.`);
+        aktualizujListeGraczy(data.gracze);
+    } else if (data.typ === 'gracz_odszedl') {
+        dodajSystemowa(`${data.username} opuścił pokój.`);
+        aktualizujListeGraczy(data.gracze);
+    } else if (data.typ === 'czat') {
+        dodajWiadomosc(data.username, data.tresc);
+    } else if (data.typ === 'stan_gry') {
+        renderujStan(data.stan);
+    } else if (data.typ === 'blad') {
+        dodajSystemowa(`⚠ ${data.komunikat}`);
+    }
+}
+
+// ------------------------------------------------------------------ //
+// Renderowanie stanu gry                                               //
+// ------------------------------------------------------------------ //
+
+function renderujStan(stan) {
+    // Pokaż stół, ukryj lobby
+    document.getElementById('lobby').style.display = 'none';
+    document.getElementById('stol').style.display = 'block';
+
+    // Faza
+    document.getElementById('faza-badge').textContent = stan.faza.toUpperCase();
+
+    // Pula
+    document.getElementById('pula-wartosc').textContent = stan.pula;
+
+    // Karty wspólne
+    const wspolne = document.getElementById('karty-wspolne');
+    wspolne.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+        const karta = stan.karty_wspolne[i];
+        wspolne.appendChild(karta ? renderKarte(karta) : renderZakryta());
+    }
+
+    // Moje karty
+    const moje = document.getElementById('moje-karty');
+    moje.innerHTML = '';
+    stan.moje_karty.forEach(k => moje.appendChild(renderKarte(k)));
+
+    // Gracze przy stole
+    const graczeStol = document.getElementById('gracze-stol');
+    graczeStol.innerHTML = '';
+    stan.aktywni.forEach(username => {
+        const div = document.createElement('div');
+        div.className = 'gracz-stol' +
+            (username === stan.aktywny_gracz ? ' aktywny' : '');
+        const stawka = stan.stawki[username] || 0;
+
+        // Przy showdown pokaż karty wszystkich
+        let kartyHtml = '';
+        if (stan.czy_skonczona && stan.reka_wszystkich[username]) {
+            kartyHtml = '<div style="display:flex;gap:4px;margin-top:6px;">' +
+                stan.reka_wszystkich[username].map(k =>
+                    `<div style="width:28px;height:42px;background:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${czerwona(k) ? '#c0392b' : '#111'}">${k.symbol}</div>`
+                ).join('') + '</div>';
+        }
+
+        div.innerHTML = `
+            <div class="gracz-stol-nick">${username}${username === AKTUALNY_USER ? ' <span style="color:#d4af6a">▶</span>' : ''}</div>
+            <div class="gracz-stol-stawka">Stawka: ${stawka}</div>
+            ${stan.uklady[username] ? `<div style="font-size:9px;color:#d4af6a;margin-top:2px;">${stan.uklady[username]}</div>` : ''}
+            ${kartyHtml}
+        `;
+        graczeStol.appendChild(div);
+    });
+
+    // Wynik
+    const wynikBox = document.getElementById('wynik-box');
+    if (stan.czy_skonczona) {
+        wynikBox.style.display = 'block';
+        const uklad = stan.uklady[stan.zwyciezca] || '';
+        wynikBox.innerHTML = `
+            <h3>🏆 ${stan.zwyciezca} wygrywa!</h3>
+            <div style="font-size:12px;color:#6a5525;margin-bottom:16px;">${uklad} · Pula: ${stan.pula} pkt</div>
+        `;
+        document.getElementById('akcje-box').style.display = 'none';
+    } else {
+        wynikBox.style.display = 'none';
+        renderujAkcje(stan);
+    }
+}
+
+function renderujAkcje(stan) {
+    const jestMojaTura = stan.aktywny_gracz === AKTUALNY_USER;
+    document.getElementById('nie-twoja-tura').style.display = jestMojaTura ? 'none' : 'block';
+    const akcjeDiv = document.getElementById('akcje');
+    akcjeDiv.style.display = jestMojaTura ? 'flex' : 'none';
+
+    if (jestMojaTura) {
+        const doWyrownania = stan.do_wyrownania;
+        const btnCheck = document.getElementById('btn-check');
+        const btnCall = document.getElementById('btn-call');
+
+        btnCheck.style.display = doWyrownania === 0 ? 'inline-block' : 'none';
+        btnCall.style.display = doWyrownania > 0 ? 'inline-block' : 'none';
+        if (doWyrownania > 0) {
+            btnCall.textContent = `CALL ${doWyrownania}`;
+        }
+
+        const min = stan.max_stawka + (stan.max_stawka === 0 ? 100 : stan.max_stawka);
+        document.getElementById('raise-input').min = min;
+        document.getElementById('raise-input').placeholder = `min ${min}`;
+    }
+}
+
+function renderKarte(k) {
+    const div = document.createElement('div');
+    div.className = 'karta ' + (czerwona(k) ? 'czerwona' : 'czarna');
+    div.textContent = k.symbol;
+    return div;
+}
+
+function renderZakryta() {
+    const div = document.createElement('div');
+    div.className = 'karta zakryta';
+    div.textContent = '?';
+    return div;
+}
+
+function czerwona(k) {
+    return k.kolor === 'kier' || k.kolor === 'karo';
+}
+
+// ------------------------------------------------------------------ //
+// Akcje gracza                                                         //
+// ------------------------------------------------------------------ //
+
+function wyślijAkcje(typ) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ typ }));
+    }
+}
+
+function wyślijRaise() {
+    const kwota = parseInt(document.getElementById('raise-input').value);
+    if (!kwota || kwota <= 0) return;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ typ: 'raise', kwota }));
+    }
+}
+
+function rozpocznijGre() {
+    const btn = document.getElementById('btn-start');
+    if (btn && btn.style.cursor === 'not-allowed') return;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ typ: 'start_gry' }));
+    }
+}
+
+// ------------------------------------------------------------------ //
+// Czat i lista graczy                                                  //
+// ------------------------------------------------------------------ //
+
+function wyslijCzat() {
+    const input = document.getElementById('czat-input');
+    const tresc = input.value.trim();
+    if (!tresc || !ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ typ: 'czat', tresc }));
+    input.value = '';
+}
+
+function aktualizujListeGraczy(gracze) {
+    const lista = document.getElementById('gracze-lista');
+    if (!lista) return;
+    lista.innerHTML = gracze.map(g => `
+        <li class="gracz-row" data-username="${g.username}">
+            <div class="gracz-avatar">${g.username.slice(0,2).toUpperCase()}</div>
+            <div style="flex:1;font-size:13px;color:#ccc;">${g.username}</div>
+            <div style="font-family:'Playfair Display',serif;font-size:13px;color:#d4af6a;">${g.punkty} pkt</div>
+        </li>
+    `).join('');
+
+    const btn = document.getElementById('btn-start');
+    if (btn) {
+        const mozna = gracze.length >= 2;
+        btn.style.opacity = mozna ? '1' : '0.4';
+        btn.style.cursor = mozna ? 'pointer' : 'not-allowed';
+    }
+}
+
+function dodajWiadomosc(username, tresc) {
+    const box = document.getElementById('czat-wiadomosci');
+    const el = document.createElement('div');
+    el.className = 'czat-wiadomosc';
+    el.innerHTML = `<span class="nick">${username}</span><span class="tresc">${esc(tresc)}</span>`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+}
+
+function dodajSystemowa(tresc) {
+    const box = document.getElementById('czat-wiadomosci');
+    const el = document.createElement('div');
+    el.className = 'czat-wiadomosc systemowa';
+    el.innerHTML = `<span class="tresc">${esc(tresc)}</span>`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+}
+
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+polacz();
+</script>
+{% endblock %}

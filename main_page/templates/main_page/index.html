@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Royal Poker — Kasyno Online{% endblock %}
+{% block extra_css %}
+<style>
+    .hero {
+        text-align: center;
+        padding: 100px 40px 90px;
+        position: relative;
+        z-index: 2;
+    }
+    .hero-ornament { font-size: 11px; letter-spacing: 10px; color: #3a2e10; margin-bottom: 20px; }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 7px; color: #6a5525; margin-bottom: 22px; font-weight: 500; }
+    .hero-line-wrap { display: flex; align-items: center; gap: 20px; justify-content: center; margin-bottom: 28px; }
+    .hero-line { flex: 1; max-width: 100px; height: 1px; background: linear-gradient(90deg, transparent, #c9a84c55); }
+    .hero-line.r { background: linear-gradient(270deg, transparent, #c9a84c55); }
+    .hero-diamond { color: #c9a84c; font-size: 12px; opacity: .7; }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: 72px; color: #d4af6a; line-height: 1.05; margin-bottom: 8px; text-shadow: 0 0 60px #c9a84c22; }
+    .hero-title em { font-style: italic; color: #ecd48c; }
+    .hero-sub { font-size: 10px; letter-spacing: 6px; color: #3d3020; margin-bottom: 18px; font-weight: 500; }
+    .hero-tagline { font-size: 14px; color: #5a4a28; margin-bottom: 56px; font-style: italic; font-family: 'Playfair Display', serif; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <div class="hero-ornament">— ✦ —</div>
+    <div class="hero-eyebrow">EKSKLUZYWNE KASYNO ONLINE</div>
+    <div class="hero-line-wrap">
+        <div class="hero-line"></div>
+        <div class="hero-diamond">✦</div>
+        <div class="hero-line r"></div>
+    </div>
+    <div class="hero-title">Zagraj.<br><em>Wygraj.</em></div>
+    <div class="hero-sub">TEXAS HOLD'EM POKER</div>
+    <div class="hero-tagline">Gdzie każda karta może zmienić wszystko.</div>
+    <div class="hero-btns">
+        {% if user.is_authenticated %}
+            <a href="/lobby/stworz/" class="btn">STWÓRZ STÓŁ</a>
+            <a href="/lobby/dolacz/" class="btn btn-outline">DOŁĄCZ DO GRY</a>
+        {% else %}
+            <a href="/accounts/register/" class="btn">ZAREJESTRUJ SIĘ</a>
+            <a href="/accounts/login/" class="btn btn-outline">ZALOGUJ SIĘ</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

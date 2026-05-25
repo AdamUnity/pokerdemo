@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Ranking — Royal Poker{% endblock %}
+{% block content %}
+<div class="card" style="padding:0;">
+    <div style="padding:28px 36px 20px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #111;">
+        <div>
+            <h2 style="font-size:26px;margin-bottom:4px;">Ranking graczy</h2>
+            <div style="font-size:9px;letter-spacing:4px;color:#3a3020;font-weight:600;">SEZON AKTUALNY</div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:13px;color:#3a3020;font-style:italic;">{{ players.count }} graczy</div>
+    </div>
+
+    {% for player in players %}
+    <a href="/ranking/profil/{{ player.username }}/" style="display:flex;align-items:center;padding:20px 36px;gap:22px;border-bottom:1px solid #0d0d0d;text-decoration:none;cursor:pointer;
+        {% if forloop.first %}background:#0d0b07;{% endif %}
+        {% if player == request.user %}background:#0f0e08;{% endif %}">
+
+        <div style="font-family:'Playfair Display',serif;font-size:16px;width:32px;
+            {% if forloop.counter == 1 %}color:#d4af6a;
+            {% elif forloop.counter == 2 %}color:#aaa;
+            {% elif forloop.counter == 3 %}color:#8b5e3c;
+            {% else %}color:#252525;{% endif %}">
+            {% if forloop.counter == 1 %}I
+            {% elif forloop.counter == 2 %}II
+            {% elif forloop.counter == 3 %}III
+            {% else %}{{ forloop.counter }}{% endif %}
+        </div>
+
+        <div style="width:46px;height:46px;border-radius:50%;background:#0f0d08;
+            border:1px solid {% if forloop.counter == 1 %}#d4af6a{% else %}#2a220e{% endif %};
+            display:flex;align-items:center;justify-content:center;
+            font-family:'Playfair Display',serif;font-size:14px;color:#c9a84c;flex-shrink:0;">
+            {{ player.username|slice:":2"|upper }}
+        </div>
+
+        <div style="flex:1;">
+            <div style="font-size:14px;letter-spacing:1px;font-weight:600;
+                {% if player == request.user %}color:#d4af6a;{% else %}color:#ccc;{% endif %}">
+                {{ player.username }}
+                {% if player == request.user %}<span style="font-size:9px;letter-spacing:2px;color:#6a5525;margin-left:8px;">TY</span>{% endif %}
+            </div>
+        </div>
+
+        <div style="text-align:right;">
+            <div style="font-family:'Playfair Display',serif;font-size:22px;color:#d4af6a;">{{ player.points }}</div>
+            <div style="font-size:9px;color:#3a3020;letter-spacing:3px;margin-top:3px;font-weight:600;">PUNKTÓW</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Royal Poker{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #070707;
+            color: #f0e6d3;
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #0a0a08;
+            border-bottom: 2px solid #1f1a0a;
+            padding: 20px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 3;
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            color: #d4af6a;
+            letter-spacing: 4px;
+            font-style: italic;
+            line-height: 1;
+            text-decoration: none;
+        }
+
+        .nav-logo span {
+            font-style: normal;
+            font-size: 10px;
+            letter-spacing: 8px;
+            display: block;
+            color: #6a5525;
+            margin-top: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            font-size: 11px;
+            color: #555;
+            letter-spacing: 2px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: #d4af6a; }
+
+        .nav-points {
+            font-size: 12px;
+            color: #d4af6a;
+            letter-spacing: 2px;
+            border: 1px solid #2e2510;
+            padding: 8px 20px;
+            border-radius: 30px;
+            background: #0f0d07;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card {
+            background: #0f0d09;
+            border: 1px solid #2a220e;
+            border-radius: 4px;
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+
+        h1, h2 {
+            font-family: 'Playfair Display', serif;
+            color: #d4af6a;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .btn {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            padding: 18px 48px;
+            border-radius: 2px;
+            cursor: pointer;
+            background: #d4af6a;
+            color: #080808;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+
+        .btn-outline {
+            background: transparent;
+            color: #d4af6a;
+            border: 1px solid #2e2510;
+        }
+
+        .btn-outline:hover { background: #1a1408; }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background: #0c0a06;
+            border: 1px solid #241e0c;
+            color: #d4af6a;
+            padding: 15px 18px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            box-sizing: border-box;
+            outline: none;
+            border-radius: 2px;
+            transition: border-color 0.2s;
+            margin-bottom: 22px;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #c9a84c44;
+        }
+
+        input[type="text"]::placeholder, input[type="password"]::placeholder {
+            color: #2a2010;
+        }
+
+        label {
+            font-size: 9px;
+            letter-spacing: 4px;
+            color: #5a4a28;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 28px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #131310;
+        }
+
+        .divider-txt {
+            font-size: 9px;
+            color: #252520;
+            letter-spacing: 4px;
+        }
+
+        p { font-family: 'Montserrat', sans-serif; }
+
+        /* SUITS BACKGROUND */
+        .suits-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .suits-bg span {
+            position: absolute;
+            font-family: 'Playfair Display', serif;
+            user-select: none;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <div class="suits-bg">
+        <span style="font-size:88px;top:2%;left:2%;opacity:.055;color:#d4af6a;transform:rotate(-18deg)">♠</span>
+        <span style="font-size:44px;top:5%;left:10%;opacity:.04;color:#8b2020;transform:rotate(12deg)">♥</span>
+        <span style="font-size:26px;top:3%;left:20%;opacity:.03;color:#d4af6a;transform:rotate(-5deg)">♦</span>
+        <span style="font-size:60px;top:1%;left:32%;opacity:.035;color:#8b2020;transform:rotate(22deg)">♣</span>
+        <span style="font-size:32px;top:7%;left:44%;opacity:.025;color:#d4af6a;transform:rotate(-10deg)">♠</span>
+        <span style="font-size:70px;top:2%;left:56%;opacity:.04;color:#8b2020;transform:rotate(8deg)">♥</span>
+        <span style="font-size:38px;top:6%;left:68%;opacity:.03;color:#d4af6a;transform:rotate(-20deg)">♦</span>
+        <span style="font-size:95px;top:1%;left:80%;opacity:.055;color:#8b2020;transform:rotate(15deg)">♣</span>
+        <span style="font-size:28px;top:4%;left:92%;opacity:.03;color:#d4af6a;transform:rotate(-8deg)">♠</span>
+        <span style="font-size:50px;top:18%;left:5%;opacity:.035;color:#8b2020;transform:rotate(25deg)">♦</span>
+        <span style="font-size:22px;top:22%;left:14%;opacity:.025;color:#d4af6a;transform:rotate(-14deg)">♣</span>
+        <span style="font-size:75px;top:15%;left:24%;opacity:.04;color:#d4af6a;transform:rotate(6deg)">♠</span>
+        <span style="font-size:34px;top:20%;left:38%;opacity:.03;color:#8b2020;transform:rotate(-22deg)">♥</span>
+        <span style="font-size:55px;top:16%;left:50%;opacity:.035;color:#d4af6a;transform:rotate(18deg)">♦</span>
+        <span style="font-size:24px;top:24%;left:62%;opacity:.025;color:#8b2020;transform:rotate(-9deg)">♣</span>
+        <span style="font-size:80px;top:14%;left:72%;opacity:.045;color:#d4af6a;transform:rotate(12deg)">♥</span>
+        <span style="font-size:36px;top:19%;left:86%;opacity:.03;color:#8b2020;transform:rotate(-16deg)">♠</span>
+        <span style="font-size:42px;top:36%;left:1%;opacity:.03;color:#d4af6a;transform:rotate(20deg)">♣</span>
+        <span style="font-size:66px;top:32%;left:8%;opacity:.04;color:#8b2020;transform:rotate(-11deg)">♦</span>
+        <span style="font-size:28px;top:40%;left:18%;opacity:.025;color:#d4af6a;transform:rotate(7deg)">♠</span>
+        <span style="font-size:85px;top:30%;left:28%;opacity:.045;color:#8b2020;transform:rotate(-24deg)">♥</span>
+        <span style="font-size:30px;top:38%;left:42%;opacity:.025;color:#d4af6a;transform:rotate(13deg)">♦</span>
+        <span style="font-size:58px;top:33%;left:54%;opacity:.038;color:#8b2020;transform:rotate(-7deg)">♣</span>
+        <span style="font-size:22px;top:42%;left:66%;opacity:.022;color:#d4af6a;transform:rotate(19deg)">♠</span>
+        <span style="font-size:72px;top:29%;left:76%;opacity:.042;color:#8b2020;transform:rotate(-13deg)">♥</span>
+        <span style="font-size:40px;top:37%;left:90%;opacity:.03;color:#d4af6a;transform:rotate(9deg)">♦</span>
+        <span style="font-size:62px;top:55%;left:3%;opacity:.038;color:#8b2020;transform:rotate(-17deg)">♠</span>
+        <span style="font-size:30px;top:60%;left:12%;opacity:.025;color:#d4af6a;transform:rotate(14deg)">♥</span>
+        <span style="font-size:48px;top:52%;left:22%;opacity:.032;color:#8b2020;transform:rotate(-6deg)">♣</span>
+        <span style="font-size:20px;top:62%;left:34%;opacity:.022;color:#d4af6a;transform:rotate(21deg)">♦</span>
+        <span style="font-size:78px;top:50%;left:44%;opacity:.042;color:#8b2020;transform:rotate(-15deg)">♠</span>
+        <span style="font-size:36px;top:58%;left:58%;opacity:.028;color:#d4af6a;transform:rotate(10deg)">♥</span>
+        <span style="font-size:54px;top:53%;left:70%;opacity:.035;color:#8b2020;transform:rotate(-22deg)">♦</span>
+        <span style="font-size:26px;top:63%;left:82%;opacity:.022;color:#d4af6a;transform:rotate(16deg)">♣</span>
+        <span style="font-size:68px;top:51%;left:92%;opacity:.04;color:#8b2020;transform:rotate(-8deg)">♠</span>
+        <span style="font-size:90px;top:72%;left:0%;opacity:.05;color:#d4af6a;transform:rotate(22deg)">♥</span>
+        <span style="font-size:38px;top:78%;left:11%;opacity:.03;color:#8b2020;transform:rotate(-12deg)">♦</span>
+        <span style="font-size:56px;top:70%;left:22%;opacity:.036;color:#d4af6a;transform:rotate(8deg)">♣</span>
+        <span style="font-size:24px;top:80%;left:33%;opacity:.022;color:#8b2020;transform:rotate(-18deg)">♠</span>
+        <span style="font-size:82px;top:68%;left:43%;opacity:.046;color:#d4af6a;transform:rotate(14deg)">♥</span>
+        <span style="font-size:32px;top:76%;left:57%;opacity:.026;color:#8b2020;transform:rotate(-5deg)">♦</span>
+        <span style="font-size:60px;top:73%;left:67%;opacity:.038;color:#d4af6a;transform:rotate(20deg)">♣</span>
+        <span style="font-size:28px;top:82%;left:79%;opacity:.022;color:#8b2020;transform:rotate(-10deg)">♠</span>
+        <span style="font-size:76px;top:70%;left:88%;opacity:.044;color:#d4af6a;transform:rotate(6deg)">♥</span>
+        <span style="font-size:46px;top:90%;left:4%;opacity:.03;color:#8b2020;transform:rotate(-20deg)">♦</span>
+        <span style="font-size:64px;top:88%;left:16%;opacity:.038;color:#d4af6a;transform:rotate(11deg)">♣</span>
+        <span style="font-size:22px;top:93%;left:28%;opacity:.02;color:#8b2020;transform:rotate(-7deg)">♠</span>
+        <span style="font-size:86px;top:86%;left:38%;opacity:.048;color:#d4af6a;transform:rotate(17deg)">♥</span>
+        <span style="font-size:34px;top:91%;left:52%;opacity:.026;color:#8b2020;transform:rotate(-13deg)">♦</span>
+        <span style="font-size:52px;top:87%;left:63%;opacity:.033;color:#d4af6a;transform:rotate(9deg)">♣</span>
+        <span style="font-size:26px;top:94%;left:75%;opacity:.02;color:#8b2020;transform:rotate(-21deg)">♠</span>
+        <span style="font-size:70px;top:88%;left:84%;opacity:.04;color:#d4af6a;transform:rotate(15deg)">♥</span>
+    </div>
+
+    <nav>
+        <a href="/" class="nav-logo">Royal Poker<span>CASINO ONLINE</span></a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <span class="nav-points">♦ {{ user.points }} PKT</span>
+                <a href="/ranking/">RANKING</a>
+                <a href="/accounts/logout/">WYLOGUJ</a>
+            {% else %}
+                <a href="/accounts/login/">LOGOWANIE</a>
+                <a href="/accounts/register/">REJESTRACJA</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>

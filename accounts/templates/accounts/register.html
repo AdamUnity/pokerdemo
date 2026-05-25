@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Rejestracja — Royal Poker{% endblock %}
+{% block content %}
+<div style="max-width:460px;margin:0 auto;">
+    <div class="card">
+        <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-size:9px;letter-spacing:6px;color:#6a5525;margin-bottom:10px;font-weight:600;">DOŁĄCZ DO GRY</div>
+            <h2 style="font-size:30px;letter-spacing:1px;margin-bottom:6px;">Zarejestruj się</h2>
+            <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:#4a3e20;">i odbierz 1 000 punktów startowych</div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn" style="width:100%;margin-top:8px;">ZAREJESTRUJ SIĘ</button>
+        </form>
+        <div class="divider">
+            <div class="divider-line"></div>
+            <div class="divider-txt">LUB</div>
+            <div class="divider-line"></div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:#3a3020;letter-spacing:1px;">
+            Masz już konto? &nbsp;<a href="/accounts/login/" style="color:#d4af6a;text-decoration:none;">Zaloguj się</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ player.username }} — Royal Poker{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;">
+    <div class="card" style="text-align:center;padding:48px 40px;">
+        <div style="font-size:9px;letter-spacing:6px;color:#6a5525;margin-bottom:16px;font-weight:600;">PROFIL GRACZA</div>
+
+        <div style="width:80px;height:80px;border-radius:50%;background:#0f0d08;border:1px solid #2a220e;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:28px;color:#c9a84c;margin:0 auto 20px;">
+            {{ player.username|slice:":2"|upper }}
+        </div>
+
+        <h2 style="font-size:32px;margin-bottom:4px;">{{ player.username }}</h2>
+
+        {% if player == request.user %}
+        <div style="font-size:9px;letter-spacing:4px;color:#6a5525;margin-bottom:24px;">TO TY</div>
+        {% endif %}
+
+        <div style="display:flex;justify-content:center;gap:48px;margin-top:32px;">
+            <div>
+                <div style="font-family:'Playfair Display',serif;font-size:36px;color:#d4af6a;">{{ player.points }}</div>
+                <div style="font-size:9px;letter-spacing:3px;color:#3a3020;margin-top:4px;font-weight:600;">PUNKTÓW</div>
+            </div>
+            <div style="width:1px;background:#1a1a1a;"></div>
+            <div>
+                <div style="font-family:'Playfair Display',serif;font-size:36px;color:#d4af6a;">#{{ pozycja }}</div>
+                <div style="font-size:9px;letter-spacing:3px;color:#3a3020;margin-top:4px;font-weight:600;">W RANKINGU</div>
+            </div>
+        </div>
+
+        <div style="margin-top:40px;padding-top:32px;border-top:1px solid #1a1a1a;">
+            <div style="font-size:9px;letter-spacing:4px;color:#3a3020;margin-bottom:8px;">DOŁĄCZYŁ</div>
+            <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:#5a4a28;">{{ player.date_joined|date:"d F Y" }}</div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:8px;">
+        <a href="/ranking/" style="font-size:11px;letter-spacing:3px;color:#6a5525;text-decoration:none;">← POWRÓT DO RANKINGU</a>
+    </div>
+</div>
+{% endblock %}
