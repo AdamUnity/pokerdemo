@@ -144,3 +144,5 @@ AUTHENTICATION_BACKENDS = [
 AUTH_USER_MODEL = 'accounts.Player'
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+CSRF_TRUSTED_ORIGINS = ['https://pokerdemo-lmq1.onrender.com']
