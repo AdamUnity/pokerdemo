@@ -206,7 +206,7 @@ let ws = null;
 // ------------------------------------------------------------------ //
 
 function polacz() {
-    const url = `ws://${window.location.host}/ws/pokoj/${KOD}/`;
+    const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws/pokoj/${KOD}/`;
     ws = new WebSocket(url);
 
     ws.onopen = () => {
