@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-^)**r2i@4oj&5vq$@xqdgbot0xi6_66#8lu_pmwyhlg^enf0qx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -139,3 +138,5 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 AUTH_USER_MODEL = 'accounts.Player'
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
