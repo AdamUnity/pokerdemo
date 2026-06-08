@@ -136,7 +136,9 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")],
         },
-    },
+    } if os.environ.get("REDIS_URL") else {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
 }
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

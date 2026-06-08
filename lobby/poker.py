@@ -77,7 +77,6 @@ def _czy_straight(rangi):
         sekwencja = unikalne[i:i+5]
         if sekwencja[0] - sekwencja[4] == 4:
             return True, sekwencja
-    # As jako 1 (A-2-3-4-5)
     if set([12, 0, 1, 2, 3]).issubset(set(unikalne)):
         return True, [3, 2, 1, 0, -1]
     return False, []
@@ -163,6 +162,9 @@ class GraPoker:
         self.zwyciezca = None
         self.uklady = {}
 
+        # Zbiór graczy którzy zagrali w tej rundzie
+        self.zagrali_w_rundzie = set()
+
         self._rozdaj()
         self._pobierz_blindy()
 
@@ -176,7 +178,11 @@ class GraPoker:
             bb = self.gracze[1]
             self._postaw(sb, self.small_blind)
             self._postaw(bb, self.big_blind)
-            self.indeks_aktywnego = 2 % len(self.aktywni)
+            # W heads-up (2 graczy) SB zaczyna, inaczej gracz po BB
+            if len(self.aktywni) == 2:
+                self.indeks_aktywnego = 0
+            else:
+                self.indeks_aktywnego = 2 % len(self.aktywni)
 
     def _postaw(self, username, kwota):
         self.stawki[username] = self.stawki.get(username, 0) + kwota
@@ -197,6 +203,9 @@ class GraPoker:
     def fold(self, username):
         if username not in self.aktywni:
             return False, 'Nie jesteś aktywnym graczem.'
+        if username != self.aktywny_gracz():
+            return False, 'Nie twoja tura.'
+        self.zagrali_w_rundzie.add(username)
         self.aktywni.remove(username)
         if len(self.aktywni) == 1:
             self._zakoncz(self.aktywni[0])
@@ -210,6 +219,7 @@ class GraPoker:
             return False, 'Nie twoja tura.'
         if self.do_wyrownania(username) > 0:
             return False, 'Musisz wyrównać lub spasować.'
+        self.zagrali_w_rundzie.add(username)
         self._nastepny_gracz()
         self._sprawdz_koniec_rundy()
         return True, 'ok'
@@ -221,6 +231,7 @@ class GraPoker:
         if kwota == 0:
             return self.check(username)
         self._postaw(username, kwota)
+        self.zagrali_w_rundzie.add(username)
         self._nastepny_gracz()
         self._sprawdz_koniec_rundy()
         return True, 'ok'
@@ -233,6 +244,8 @@ class GraPoker:
             return False, f'Minimalne podbicie to {minimum}.'
         roznica = kwota_laczna - self.stawki.get(username, 0)
         self._postaw(username, roznica)
+        # Po raise wszyscy inni muszą znowu zagrać
+        self.zagrali_w_rundzie = {username}
         self._nastepny_gracz()
         return True, 'ok'
 
@@ -242,12 +255,14 @@ class GraPoker:
     def _sprawdz_koniec_rundy(self):
         maks = self.max_stawka()
         wszyscy_wyrownali = all(self.stawki.get(u, 0) == maks for u in self.aktywni)
-        if wszyscy_wyrownali:
+        wszyscy_zagrali = all(u in self.zagrali_w_rundzie for u in self.aktywni)
+        if wszyscy_wyrownali and wszyscy_zagrali:
             self._nastepna_faza()
 
     def _nastepna_faza(self):
         self.stawki = {u: 0 for u in self.gracze}
         self.indeks_aktywnego = 0
+        self.zagrali_w_rundzie = set()
 
         if self.faza == 'pre-flop':
             self.karty_wspolne += self.talia.dobierz(3)
@@ -294,6 +309,7 @@ class GraPoker:
             'czy_skonczona': self.czy_skonczona,
             'zwyciezca': self.zwyciezca,
             'uklady': self.uklady,
+            'zagrali_w_rundzie': list(self.zagrali_w_rundzie),
         }
 
     @staticmethod
@@ -314,6 +330,7 @@ class GraPoker:
         g.czy_skonczona = d['czy_skonczona']
         g.zwyciezca = d['zwyciezca']
         g.uklady = d['uklady']
+        g.zagrali_w_rundzie = set(d.get('zagrali_w_rundzie', []))
         return g
 
     def stan_dla_gracza(self, username):

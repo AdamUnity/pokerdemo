@@ -24,6 +24,14 @@ class PokerConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
+        # Wyślij aktualny stan gry jeśli gra już trwa
+        gra = await self.pobierz_aktualny_stan()
+        if gra:
+            await self.send(text_data=json.dumps({
+                'typ': 'stan_gry',
+                'stan': gra.stan_dla_gracza(self.user.username),
+            }))
+
         await self.channel_layer.group_send(self.group_name, {
             'type': 'gracz_dolaczyl',
             'username': self.user.username,
@@ -178,6 +186,15 @@ class PokerConsumer(AsyncWebsocketConsumer):
             return [{'username': g.username, 'punkty': g.points} for g in pokoj.gracze.all()]
         except Room.DoesNotExist:
             return []
+
+    @database_sync_to_async
+    def pobierz_aktualny_stan(self):
+        try:
+            pokoj = Room.objects.get(kod=self.kod, aktywna=True)
+            game_state = GameState.objects.get(pokoj=pokoj)
+            return game_state.get_stan()
+        except (Room.DoesNotExist, GameState.DoesNotExist):
+            return None
 
     @database_sync_to_async
     def stworz_gre(self):
