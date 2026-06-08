@@ -83,15 +83,15 @@ def _czy_straight(rangi):
 
 def ocen_reke(karty_gracza, karty_wspolne):
     wszystkie = karty_gracza + karty_wspolne
-    najlepszy = (0, 'Wysoka karta', [])
+    najlepszy = (0, 'Wysoka karta', [], []) 
 
     for combo in combinations(wszystkie, min(5, len(wszystkie))):
         combo = list(combo)
         wynik = _ocen_5_kart(combo)
         if wynik[0] > najlepszy[0]:
-            najlepszy = wynik
+            najlepszy = (wynik[0], wynik[1], wynik[2], combo)  
 
-    return najlepszy[0], najlepszy[1]
+    return najlepszy[0], najlepszy[1], najlepszy[3] 
 
 def _ocen_5_kart(karty):
     rangi = _rangi(karty)
@@ -161,6 +161,7 @@ class GraPoker:
         self.czy_skonczona = False
         self.zwyciezca = None
         self.uklady = {}
+        self.wygrane_karty = {}
 
         # Zbiór graczy którzy zagrali w tej rundzie
         self.zagrali_w_rundzie = set()
@@ -280,9 +281,11 @@ class GraPoker:
     def _showdown(self):
         najlepszy_wynik = -1
         zwyciezca = None
+        self.wygrane_karty = {}  # nowe pole
         for u in self.aktywni:
-            wynik, nazwa = ocen_reke(self.reka[u], self.karty_wspolne)
+            wynik, nazwa, karty = ocen_reke(self.reka[u], self.karty_wspolne)
             self.uklady[u] = nazwa
+            self.wygrane_karty[u] = [k.do_slownika() for k in karty]
             if wynik > najlepszy_wynik:
                 najlepszy_wynik = wynik
                 zwyciezca = u
@@ -309,6 +312,7 @@ class GraPoker:
             'czy_skonczona': self.czy_skonczona,
             'zwyciezca': self.zwyciezca,
             'uklady': self.uklady,
+            'wygrane_karty': self.wygrane_karty,
             'zagrali_w_rundzie': list(self.zagrali_w_rundzie),
         }
 
@@ -330,6 +334,7 @@ class GraPoker:
         g.czy_skonczona = d['czy_skonczona']
         g.zwyciezca = d['zwyciezca']
         g.uklady = d['uklady']
+        g.wygrane_karty = d.get('wygrane_karty', {})
         g.zagrali_w_rundzie = set(d.get('zagrali_w_rundzie', []))
         return g
 
@@ -347,6 +352,7 @@ class GraPoker:
             'czy_skonczona': self.czy_skonczona,
             'zwyciezca': self.zwyciezca,
             'uklady': self.uklady if self.czy_skonczona else {},
+            'wygrane_karty': self.wygrane_karty if self.czy_skonczona else {},
             'reka_wszystkich': (
                 {u: [k.do_slownika() for k in karty] for u, karty in self.reka.items()}
                 if self.czy_skonczona else {}

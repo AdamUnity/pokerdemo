@@ -117,6 +117,12 @@
         font-size: 28px;
     }
 
+    .karta.wygrana {
+        border: 3px solid gold;
+        box-shadow: 0 0 15px gold;
+        transform: translateY(-5px);
+    }
+
     .karty-label {
         font-size: 9px;
         letter-spacing: 3px;
@@ -521,10 +527,25 @@
         const wynikBox = document.getElementById('wynik-box');
         if (stan.czy_skonczona) {
             wynikBox.style.display = 'block';
+
             const uklad = stan.uklady[stan.zwyciezca] || '';
+            const wygrane = stan.wygrane_karty[stan.zwyciezca] || [];
+
+            const kartyHtml = wygrane.map(k =>
+                `<div class="karta ${czerwona(k) ? 'czerwona' : 'czarna'} wygrana">${k.symbol}</div>`
+            ).join('');
+
             wynikBox.innerHTML = `
             <h3>🏆 ${stan.zwyciezca} wygrywa!</h3>
             <div style="font-size:12px;color:#6a5525;margin-bottom:16px;">${uklad} · Pula: ${stan.pula} pkt</div>
+
+            <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
+                Karty decydujące o wygranej
+            </div>
+
+            <div class="karty-row">
+                ${kartyHtml}
+            </div>
         `;
             document.getElementById('akcje-box').style.display = 'none';
         } else {
@@ -572,6 +593,13 @@
         div.className = 'karta zakryta';
         div.textContent = '?';
         return div;
+    }
+
+    function czyWygranaKarta(karta, wygrane) {
+        return wygrane.some(w =>
+            w.wartosc === karta.wartosc &&
+            w.kolor === karta.kolor
+        );
     }
 
     function czerwona(k) {
